@@ -66,13 +66,36 @@ class RemoteFeedLoaderTests: XCTestCase {
         }
     }
     
-    func test_load_deliversNoItemson200HTTPResponseWithEmptyJSONList() {
+    func test_load_deliversNoItemsOn200HTTPResponseWithEmptyJSONList() {
         let (sut, client) = makeSUT()
         
         expect(sut, toCompleteWithResult: .success([])) {
             let emptyJSONList = Data("{\"items\": []}".utf8)
             client.complete(withStatusCode: 200, data: emptyJSONList)
         }
+    }
+    
+    func test_load_deliversFeedItemsOn200HTTPResponseWithJSONList() {
+        let (sut, client) = makeSUT()
+        
+        let feedItem1 = makeFeedItem(id: UUID(),
+                                 description: nil,
+                                 location: nil,
+                                 imageURL: URL(string: "http://a-image-url.com")!)
+        let feedItem2 = makeFeedItem(id: UUID(),
+                                 description: "a description",
+                                 location: "a location",
+                                 imageURL: URL(string: "http://another-image-url.com")!)
+        
+        let items = [
+            "items": [feedItem1.json, feedItem2.json]
+        ]
+        
+        expect(sut, toCompleteWithResult: .success([feedItem1.model, feedItem2.model])) {
+            let json = try! JSONSerialization.data(withJSONObject: items)
+            client.complete(withStatusCode: 200, data: json)
+        }
+        
     }
     
 //    MARK: - Helpers
@@ -89,6 +112,17 @@ class RemoteFeedLoaderTests: XCTestCase {
         action()
         
         XCTAssertEqual(capturedResults, [result], file: file, line: line)
+    }
+    
+    private func makeFeedItem(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedItem, json: [String: Any]) {
+        let feedItem = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+        let json = [
+            "id": id.uuidString,
+            "description": description,
+            "location": location,
+            "image": imageURL.absoluteString
+        ].compactMapValues({$0})
+        return (feedItem, json)
     }
     
     class HTTPClientSpy: HTTPClient {
