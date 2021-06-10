@@ -41,7 +41,8 @@ class RemoteFeedLoaderTests: XCTestCase {
         let sampleCodes = [199,201,300,400,500]
         sampleCodes.enumerated().forEach { index, code in
             expect(sut, toCompleteWithResult: .failure(.invalidData)) {
-                client.complete(withStatusCode: code, at: index)
+                let emptyJOSN = makeItemJSON(items: [])
+                client.complete(withStatusCode: code, data: emptyJOSN, at: index)
             }
             
         }
@@ -70,7 +71,7 @@ class RemoteFeedLoaderTests: XCTestCase {
         let (sut, client) = makeSUT()
         
         expect(sut, toCompleteWithResult: .success([])) {
-            let emptyJSONList = Data("{\"items\": []}".utf8)
+            let emptyJSONList = makeItemJSON(items: [])
             client.complete(withStatusCode: 200, data: emptyJSONList)
         }
     }
@@ -86,13 +87,9 @@ class RemoteFeedLoaderTests: XCTestCase {
                                  description: "a description",
                                  location: "a location",
                                  imageURL: URL(string: "http://another-image-url.com")!)
-        
-        let items = [
-            "items": [feedItem1.json, feedItem2.json]
-        ]
-        
+                
         expect(sut, toCompleteWithResult: .success([feedItem1.model, feedItem2.model])) {
-            let json = try! JSONSerialization.data(withJSONObject: items)
+            let json = makeItemJSON(items: [feedItem1.json, feedItem2.json])
             client.complete(withStatusCode: 200, data: json)
         }
         
@@ -125,6 +122,13 @@ class RemoteFeedLoaderTests: XCTestCase {
         return (feedItem, json)
     }
     
+    private func makeItemJSON(items: [[String: Any]]) -> Data {
+        let json = [
+            "items": items
+        ]
+        return try! JSONSerialization.data(withJSONObject: json)
+    }
+    
     class HTTPClientSpy: HTTPClient {
         
         var messages: [(url: URL, completion: (HTTPURLResult) -> Void)] = []
@@ -140,7 +144,7 @@ class RemoteFeedLoaderTests: XCTestCase {
             messages[index].completion(.failure(error))
         }
         
-        func complete(withStatusCode: Int, data: Data = Data(), at index: Int = 0) {
+        func complete(withStatusCode: Int, data: Data, at index: Int = 0) {
             let response = HTTPURLResponse(
                 url: requestedURLs[index],
                 statusCode: withStatusCode,
