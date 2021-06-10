@@ -6,7 +6,6 @@
 //
 
 import Foundation
-
 public final class RemoteFeedLoader {
     private let url: URL
     private let client: HTTPClient
@@ -30,12 +29,7 @@ public final class RemoteFeedLoader {
         client.get(from: url) { result in
             switch result {
             case let .success(data, response):
-                do {
-                    let feedItems = try FeedItemsMapper.map(data, response)
-                    completionHandler(.success(feedItems))
-                } catch {
-                    completionHandler(.failure(.invalidData))
-                }
+                completionHandler(FeedItemsMapper.map(data, from: response))
             case .failure:
                 completionHandler(.failure(.connectivity))
             }
