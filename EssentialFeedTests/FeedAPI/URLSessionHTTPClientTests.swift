@@ -27,6 +27,22 @@ class URLSessionHTTPClient {
 
 class URLSessionHTTPClientTests: XCTestCase {
     
+    func test_getFromURL_performsGETRequestWithURL() {
+        URLProtocolStub.startInterceptingRequests()
+        let url = URL(string: "https://any-url.com")!
+        let sut = URLSessionHTTPClient()
+        
+        let exe = expectation(description: "Wait for completion")
+        URLProtocolStub.observeRequests { request in
+            XCTAssertEqual(request.url, url)
+            XCTAssertEqual(request.httpMethod, "GET")
+            exe.fulfill()
+        }
+        sut.get(from: url, completion: {_ in})
+        wait(for: [exe], timeout: 1.0)
+        URLProtocolStub.stopInterceptingRequests()
+    }
+    
     func test_getFromURL_failsOnRequestError() {
         URLProtocolStub.startInterceptingRequests()
         let url = URL(string: "https://any-url.com")!
@@ -52,11 +68,17 @@ class URLSessionHTTPClientTests: XCTestCase {
     // MARK: - Helpers
     private class URLProtocolStub: URLProtocol {
         private static var stubs: Stub?
+        private static var requestObserver: ((URLRequest) -> Void)?
+        
         
         private struct Stub {
             let data: Data?
             let response: URLResponse?
             let error: Error?
+        }
+        
+        static func observeRequests(observer: @escaping (URLRequest) -> Void) {
+            requestObserver = observer
         }
         
         static func stub(data: Data?, response: URLResponse?, error: Error? = nil) {
@@ -70,6 +92,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         static func stopInterceptingRequests() {
             URLProtocol.unregisterClass(URLProtocolStub.self)
             stubs = nil
+            requestObserver = nil
         }
         
         override class func canInit(with request: URLRequest) -> Bool {
@@ -77,6 +100,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
         
         override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+            requestObserver?(request)
             return request
         }
         
