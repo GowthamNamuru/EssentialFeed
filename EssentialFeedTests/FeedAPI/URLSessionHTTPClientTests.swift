@@ -30,7 +30,8 @@ class URLSessionHTTPClientTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "GET")
             exe.fulfill()
         }
-        makeSUT().get(from: url, completion: {_ in})
+        makeSUT().get(from: url) { _ in }
+        
         wait(for: [exe], timeout: 1.0)
     }
     
@@ -186,11 +187,15 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
         
         override class func canonicalRequest(for request: URLRequest) -> URLRequest {
-            requestObserver?(request)
             return request
         }
         
         override func startLoading() {
+            if let requestObserver = URLProtocolStub.requestObserver {
+                client?.urlProtocolDidFinishLoading(self)
+                return requestObserver(request)
+            }
+            
             guard let stub = URLProtocolStub.stubs else {
                 return
             }
