@@ -76,20 +76,20 @@ class RemoteFeedLoaderTests: XCTestCase {
         }
     }
     
-    func test_load_deliversFeedItemsOn200HTTPResponseWithJSONList() {
+    func test_load_deliversFeedImagesOn200HTTPResponseWithJSONList() {
         let (sut, client) = makeSUT()
         
-        let feedItem1 = makeFeedItem(id: UUID(),
+        let FeedImage1 = makeFeedImage(id: UUID(),
                                  description: nil,
                                  location: nil,
                                  imageURL: URL(string: "http://a-image-url.com")!)
-        let feedItem2 = makeFeedItem(id: UUID(),
+        let FeedImage2 = makeFeedImage(id: UUID(),
                                  description: "a description",
                                  location: "a location",
                                  imageURL: URL(string: "http://another-image-url.com")!)
                 
-        expect(sut, toCompleteWithResult: .success([feedItem1.model, feedItem2.model])) {
-            let json = makeItemJSON(items: [feedItem1.json, feedItem2.json])
+        expect(sut, toCompleteWithResult: .success([FeedImage1.model, FeedImage2.model])) {
+            let json = makeItemJSON(items: [FeedImage1.json, FeedImage2.json])
             client.complete(withStatusCode: 200, data: json)
         }
         
@@ -144,15 +144,15 @@ class RemoteFeedLoaderTests: XCTestCase {
         return .failure(error)
     }
     
-    private func makeFeedItem(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedItem, json: [String: Any]) {
-        let feedItem = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+    private func makeFeedImage(id: UUID, description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedImage, json: [String: Any]) {
+        let FeedImage = FeedImage(id: id, description: description, location: location, url: imageURL)
         let json = [
             "id": id.uuidString,
             "description": description,
             "location": location,
             "image": imageURL.absoluteString
         ].compactMapValues({$0})
-        return (feedItem, json)
+        return (FeedImage, json)
     }
     
     private func makeItemJSON(items: [[String: Any]]) -> Data {
