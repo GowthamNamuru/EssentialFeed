@@ -17,6 +17,16 @@ class ValidateFeedCacheUseCaseTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [])
     }
     
+
+    func test_validateCache_deletsCacheOnRetrievalError() {
+        let (sut, store) = makeSUT()
+        
+        sut.validateCache()
+        
+        store.completeRetrieval(with: anyNSError())
+        
+        XCTAssertEqual(store.receivedMessages, [.retrieval, .deleteCacheFeed])
+    }
     
     //    MARK: -  HELPERS
     
@@ -28,4 +38,8 @@ class ValidateFeedCacheUseCaseTests: XCTestCase {
         return (sut, store)
     }
     
+    private func anyNSError() -> NSError {
+        NSError(domain: "any error", code: 1)
+    }
+
 }
