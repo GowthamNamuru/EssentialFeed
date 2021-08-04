@@ -93,12 +93,7 @@ class CodableFeedStoreTests: XCTestCase {
         let feed = uniqueImageFeed().local
         let timestamp = Date()
         
-        let exe = expectation(description: "Wait for retrieval completion")
-        sut.insert(feed, timestamp) { insertionError in
-            XCTAssertNil(insertionError, "Expected feed to be inserted successfully")
-            exe.fulfill()
-        }
-        wait(for: [exe], timeout: 1.0)
+        insert((feed, timestamp), to: sut)
         
         expect(sut: sut, toRetrive: .found(feed: feed, timestamp: timestamp))
     }
@@ -109,12 +104,7 @@ class CodableFeedStoreTests: XCTestCase {
         let feed = uniqueImageFeed().local
         let timestamp = Date()
         
-        let exe = expectation(description: "Wait for cache insertion")
-        sut.insert(feed, timestamp) { insertionError in
-            XCTAssertNil(insertionError, "Expected feed to be inserted successfully")
-                    exe.fulfill()
-        }
-        wait(for: [exe], timeout: 1.0)
+        insert((feed, timestamp), to: sut)
         
         expect(sut: sut, toRetrieveTwice: .found(feed: feed, timestamp: timestamp))
     }
@@ -128,7 +118,16 @@ class CodableFeedStoreTests: XCTestCase {
         return sut
     }
     
-    func expect(sut: CodableFeedStore, toRetrieveTwice expectedResult: RetrieveCachedFeedResult, file: StaticString = #filePath, line: UInt = #line) {
+    private func insert(_ cache: (feed: [LocalFeedImage], timestamp: Date), to sut: CodableFeedStore) {
+        let exe = expectation(description: "Wait for cache insertion")
+        sut.insert(cache.feed, cache.timestamp) { insertionError in
+            XCTAssertNil(insertionError, "Expected feed to be inserted successfully")
+                    exe.fulfill()
+        }
+        wait(for: [exe], timeout: 1.0)
+    }
+    
+    private func expect(sut: CodableFeedStore, toRetrieveTwice expectedResult: RetrieveCachedFeedResult, file: StaticString = #filePath, line: UInt = #line) {
         expect(sut: sut, toRetrive: expectedResult)
         expect(sut: sut, toRetrive: expectedResult)
     }
