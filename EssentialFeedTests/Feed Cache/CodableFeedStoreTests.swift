@@ -8,39 +8,7 @@
 import XCTest
 import EssentialFeed
 
-protocol FeedStoreSpecs {
-    func test_retrieve_deliversEmptyOnEmptyCache()
-    func test_retrieve_hasNoSideEffectsOnEmptyCache()
-    func test_retrieve_deliversFoundValuesOnNonEmptyCache()
-    func test_retrieve_hasNoSideEffectsOnNonEmptyCache()
-    
-    func test_insert_deliversNoErrorOnEmptyCache()
-    func test_insert_deliversNoErrorOnNonEmptyCache()
-    func test_insert_overridesPreviouslyInsertedCacheValues()
-    
-    func test_delete_deliversNoErrorOnEmptyCache()
-    func test_delete_hasNoSideEffectsOnEmptyCache()
-    func test_delete_deliversNoErrorOnNonEmptyCache()
-    func test_delete_emptiesPreviouslyInsertedCache()
-    
-    func test_storeSideEffects_runSerially()
-}
-
-protocol FailableRetrieveFeedStoreSpecs {
-    func test_retrive_deliversFailureOnRetrievalError()
-    func test_retrive_hasNoSideEffectsOnFailure()
-}
-
-protocol FailableInsertFeedStoreSpecs {
-    func test_insert_deliversErrorOnInsertionError()
-    func test_insert_hasNoSideEffectsOnInsertionError()
-}
-
-protocol FailableDeleteFeedStoreSpecs {
-    func test_delete_deliversErrorOnDeletionError()
-}
-
-class CodableFeedStoreTests: XCTestCase {
+class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
 
     
     override func setUp() {
@@ -192,16 +160,16 @@ class CodableFeedStoreTests: XCTestCase {
         
         expect(sut: sut, toRetrive: .empty)
     }
-    
-//    func test_delete_deliversErrorOnDeletionError() {
-//        let noDeletePremissionURL = cachesDirectory()
-//        let sut = makeSUT(storeURL: noDeletePremissionURL)
-//
-//        let deleteError = deleteCache(from: sut)
-//
-//        XCTAssertNotNil(deleteError, "Expected cache deletion to fail")
-//        expect(sut: sut, toRetrive: .empty)
-//    }
+    // Fix me!
+    func ignoretest_delete_deliversErrorOnDeletionError() {
+        let noDeletePremissionURL = cachesDirectory()
+        let sut = makeSUT(storeURL: noDeletePremissionURL)
+
+        let deleteError = deleteCache(from: sut)
+
+        XCTAssertNotNil(deleteError, "Expected cache deletion to fail")
+        expect(sut: sut, toRetrive: .empty)
+    }
     
     func test_storeSideEffects_runSerially() {
         let sut = makeSUT()
