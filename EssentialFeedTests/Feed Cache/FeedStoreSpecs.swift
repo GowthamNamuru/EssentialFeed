@@ -39,5 +39,4 @@ protocol FailableDeleteFeedStoreSpecs: FeedStoreSpecs {
     func test_delete_deliversErrorOnDeletionError()
 }
 
-// TODO: - Once fixing the test_delete_deliversErrorOnDeletionError testCase add the 'FailableDeleteFeedStoreSpecs' to the FailableFeedStore typealias
-typealias FailableFeedStore = FailableInsertFeedStoreSpecs & FailableRetrieveFeedStoreSpecs
+typealias FailableFeedStore = FailableInsertFeedStoreSpecs & FailableRetrieveFeedStoreSpecs & FailableDeleteFeedStoreSpecs

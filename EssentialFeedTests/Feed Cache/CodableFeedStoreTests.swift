@@ -150,14 +150,22 @@ class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
         
         expect(sut: sut, toRetrive: .empty)
     }
-    // Fix me!
-    func ignoretest_delete_deliversErrorOnDeletionError() {
+
+    func test_delete_deliversErrorOnDeletionError() {
         let noDeletePremissionURL = cachesDirectory()
         let sut = makeSUT(storeURL: noDeletePremissionURL)
 
         let deleteError = deleteCache(from: sut)
 
         XCTAssertNotNil(deleteError, "Expected cache deletion to fail")
+        expect(sut: sut, toRetrive: .empty)
+    }
+    
+    func test_delete_hasNoSideEffectsOnDeletionError() {
+        let noDeletePremissionURL = cachesDirectory()
+        let sut = makeSUT(storeURL: noDeletePremissionURL)
+        
+        deleteCache(from: sut)
         expect(sut: sut, toRetrive: .empty)
     }
     
@@ -202,7 +210,7 @@ class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
     }
     
     private func cachesDirectory() -> URL {
-        return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        return FileManager.default.urls(for: .cachesDirectory, in: .systemDomainMask).first!
     }
     
     private func setUpEmptyStore() {
