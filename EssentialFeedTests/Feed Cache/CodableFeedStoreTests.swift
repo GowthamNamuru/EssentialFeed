@@ -95,52 +95,40 @@ class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
     
     func test_delete_deliversNoErrorOnEmptyCache() {
         let sut = makeSUT()
-        let deletionError = deleteCache(from: sut)
-        XCTAssertNil(deletionError, "Expected empty cache deletion to successed")
+        
+        assertThatDeleteDeliversNoErrorOnEmptyCache(on: sut)
     }
     
     func test_delete_hasNoSideEffectsOnEmptyCache() {
         let sut = makeSUT()
-        deleteCache(from: sut)
         
-        expect(sut: sut, toRetrive: .empty)
+        assertThatDeleteHasNoSideEffectsOnEmptyCache(on: sut)
     }
 
     func test_delete_deliversNoErrorOnNonEmptyCache() {
         let sut = makeSUT()
-        let feed = uniqueImageFeed().local
-        insert((feed, Date()), to: sut)
         
-        let deletionError = deleteCache(from: sut)
-        XCTAssertNil(deletionError, "Expected non-empty cache deletion to successed")
-        
+        assertThatDeleteDeliversNoErrorOnNonEmptyCache(on: sut)
     }
     
     func test_delete_emptiesPreviouslyInsertedCache() {
         let sut = makeSUT()
-        let feed = uniqueImageFeed().local
-        insert((feed, Date()), to: sut)
-        deleteCache(from: sut)
         
-        expect(sut: sut, toRetrive: .empty)
+        assertThatDeleteEmptiesPreviouslyInsertedCache(on: sut)
     }
 
     func test_delete_deliversErrorOnDeletionError() {
         let noDeletePremissionURL = cachesDirectory()
         let sut = makeSUT(storeURL: noDeletePremissionURL)
 
-        let deleteError = deleteCache(from: sut)
-
-        XCTAssertNotNil(deleteError, "Expected cache deletion to fail")
-        expect(sut: sut, toRetrive: .empty)
+        assertThatDeleteDeliversErrorOnDeletionError(on: sut)
     }
     
     func test_delete_hasNoSideEffectsOnDeletionError() {
         let noDeletePremissionURL = cachesDirectory()
         let sut = makeSUT(storeURL: noDeletePremissionURL)
         
-        deleteCache(from: sut)
-        expect(sut: sut, toRetrive: .empty)
+        assertThatDeleteHasNoSideEffectsOnDeletionError(on: sut)
     }
     
     func test_storeSideEffects_runSerially() {
