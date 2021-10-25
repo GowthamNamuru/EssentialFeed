@@ -214,10 +214,18 @@
 		D4932AE927265BBA00A82483 /* Infrastrcutre */ = {
 			isa = PBXGroup;
 			children = (
+				D4932AEA27265C2E00A82483 /* CoreData */,
+			);
+			path = Infrastrcutre;
+			sourceTree = "<group>";
+		};
+		D4932AEA27265C2E00A82483 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
 				D49E27152715374600DC9DBA /* CoreDataFeedStore.swift */,
 				D49E271A271541E300DC9DBA /* FeedStore.xcdatamodeld */,
 			);
-			path = Infrastrcutre;
+			path = CoreData;
 			sourceTree = "<group>";
 		};
 		D4ABDF8726799B9F00B67256 /* Helpers */ = {
