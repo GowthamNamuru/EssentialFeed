@@ -94,14 +94,14 @@ extension FeedStoreSpecs where Self: XCTestCase {
     func assertThatDeleteDeliversNoErrorOnEmptyCache(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
         let deletionError = deleteCache(from: sut)
         
-        XCTAssertNil(deletionError, "Expected empty cache deletion to successed")
+        XCTAssertNil(deletionError, "Expected empty cache deletion to successed", file: file, line: line)
     }
     
     func assertThatDeleteHasNoSideEffectsOnEmptyCache(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
         
         deleteCache(from: sut)
         
-        expect(sut: sut, toRetrive: .empty)
+        expect(sut: sut, toRetrive: .empty, file: file, line: line)
     }
     
     func assertThatDeleteDeliversNoErrorOnNonEmptyCache(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
@@ -109,7 +109,7 @@ extension FeedStoreSpecs where Self: XCTestCase {
         insert((feed, Date()), to: sut)
         
         let deletionError = deleteCache(from: sut)
-        XCTAssertNil(deletionError, "Expected non-empty cache deletion to successed")
+        XCTAssertNil(deletionError, "Expected non-empty cache deletion to successed", file: file, line: line)
     }
     
     func assertThatDeleteEmptiesPreviouslyInsertedCache(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
@@ -118,7 +118,7 @@ extension FeedStoreSpecs where Self: XCTestCase {
         insert((feed, Date()), to: sut)
         deleteCache(from: sut)
         
-        expect(sut: sut, toRetrive: .empty)
+        expect(sut: sut, toRetrive: .empty, file: file, line: line)
     }
     
     func assertThatDeleteDeliversErrorOnDeletionError(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
@@ -126,12 +126,38 @@ extension FeedStoreSpecs where Self: XCTestCase {
         let deleteError = deleteCache(from: sut)
 
         XCTAssertNotNil(deleteError, "Expected cache deletion to fail")
-        expect(sut: sut, toRetrive: .empty)
+        expect(sut: sut, toRetrive: .empty, file: file, line: line)
     }
     
     func assertThatDeleteHasNoSideEffectsOnDeletionError(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
         deleteCache(from: sut)
-        expect(sut: sut, toRetrive: .empty)
+        expect(sut: sut, toRetrive: .empty, file: file, line: line)
+    }
+    
+    func assertThatSideEffectsRunSerially(on sut: FeedStore, file: StaticString = #file, line: UInt = #line) {
+        var completedOperationsInOrder = [XCTestExpectation]()
+        
+        let op1 = expectation(description: "Operation 1")
+        sut.insert(uniqueImageFeed().local, Date(), completion: { _ in
+            completedOperationsInOrder.append(op1)
+            op1.fulfill()
+        })
+        
+        let op2 = expectation(description: "Operation 2")
+        sut.deleteCachedFeed(completion: { _ in
+            completedOperationsInOrder.append(op2)
+            op2.fulfill()
+        })
+        
+        let op3 = expectation(description: "Operation 2")
+        sut.retrieve(completion: { _ in
+            completedOperationsInOrder.append(op3)
+            op3.fulfill()
+        })
+        
+        waitForExpectations(timeout: 5.0)
+        
+        XCTAssertEqual(completedOperationsInOrder, [op1, op2, op3], "Expected side effects to run serially but operations finished in wrong order", file: file, line: line)
     }
     
     
